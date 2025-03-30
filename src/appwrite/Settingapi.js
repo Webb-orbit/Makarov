@@ -14,9 +14,9 @@ class adminsett {
         this.sett = new Databases(this.client)
   }
 
-  async createadmin(headername, subheader,aboutcontent,aboutheader,aboutsubheader,thoughtheader,subthought){
+  async createadmin(headername){
         return await this.sett.createDocument(Appwriteconf.appwritebase, Appwriteconf.admincollid, ID.unique(), {
-            headername, subheader,aboutcontent,aboutheader,aboutsubheader,thoughtheader,subthought
+            headername
         })
   }
   
