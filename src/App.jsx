@@ -1,4 +1,4 @@
-import { useEffect, useState} from "react"
+import { useEffect, useState, useRef} from "react"
 import Admin from "./appwrite/auth"
 import { useDispatch, useSelector} from "react-redux"
 import { storelogin } from "./store/adminslice"
@@ -15,7 +15,7 @@ const App = () => {
   const {isadmin} = useSelector(state=> state.admin)
   let location = useLocation();
   let navigate = useNavigate();
-  let recognitionRef = false;
+  const recognitionRef = useRef(null);
   
   useEffect(() => {
     ; (async () => {
@@ -33,21 +33,20 @@ const App = () => {
   }, [])
 
   useEffect(() => {
-      if (!isadmin || recognitionRef) return; // Do not start recognition if the user is not an admin
+    if (recognitionRef.current) return;
 
     const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
     const recognition = new SpeechRecognition();
     recognition.continuous = true;
     recognition.interimResults = false;
     recognition.lang = "en-US";
-    recognitionRef = true
+    recognitionRef.current = recognition;
+    
     if(JSON.parse(localStorage.getItem("ultra"))){
       recognition.abort();
-      recognitionRef = false
+      recognitionRef.current = null;
       return 
     }
-
-
 
     recognition.onresult = (event) => {
       const command = event.results[event.results.length - 1][0].transcript.toLowerCase();
@@ -66,18 +65,19 @@ const App = () => {
     };
 
     recognition.onend = () => {
-      console.log("Recognition ended, restarting...");
-      if (isadmin) recognition.start(); // Restart only if admin session is active
+      if (!JSON.parse(localStorage.getItem("ultra"))) {
+        recognition.start();
+      }
     };
 
     recognition.start();
 
     return () => {
       recognition.abort();
-      recognitionRef = false
+      recognitionRef.current = null;
     };
-  }, [isadmin, location]); // Depend on `isadmin`
-  
+  }, []); // Empty dependency array - run only once on mount for logged-in users
+
   return loading ? (<Loadingpage />) : (
     <>
       <Hidra catcher={hidra}/>
