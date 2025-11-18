@@ -64,10 +64,8 @@ const App = () => {
       
     };
 
-    recognition.onend = () => {
-      if (!JSON.parse(localStorage.getItem("ultra"))) {
-        recognition.start();
-      }
+    recognition.onerror = (event) => {
+      console.log("[v0] Voice recognition error:", event.error);
     };
 
     recognition.start();
